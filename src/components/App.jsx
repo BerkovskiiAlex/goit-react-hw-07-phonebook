@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import 'modern-normalize';
 import { Input } from './Input/Input';
 import { ContactsList } from './ContactList/ContactList';
-import { nanoid } from 'nanoid';
 import { Filter } from './Filter';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -33,7 +32,7 @@ export const App = () => {
   }, [dispatch]);
 
   const handleAddContact = (name, number) => {
-    const newContact = { id: nanoid(), name, number };
+    const newContact = { name, number };
 
     if (contacts.some(contact => contact.name === name)) {
       toast(`${name} is already in contacts`, { autoClose: 4000 });
