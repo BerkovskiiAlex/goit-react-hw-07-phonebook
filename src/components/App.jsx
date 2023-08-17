@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import 'modern-normalize';
 import { Input } from './Input/Input';
 import { ContactsList } from './ContactList/ContactList';
@@ -7,13 +7,30 @@ import { Filter } from './Filter';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectContacts, selectFilter } from 'Redux/sellectors';
-import { addContact, addFilter, deleteContact } from 'Redux/phonebookSlise';
+import {
+  selectContactsItems,
+  selectError,
+  selectFilter,
+  selectIsLoading,
+} from 'Redux/sellectors';
+import { addFilter } from 'Redux/phonebookSlise';
+import {
+  addContactThunk,
+  deleteContactThunk,
+  fetchContactsThunk,
+} from 'Redux/operations';
+import { Loader } from './Loader';
 
 export const App = () => {
   const dispatch = useDispatch();
-  const contacts = useSelector(selectContacts);
+  const contacts = useSelector(selectContactsItems);
   const filter = useSelector(selectFilter);
+  const isLoading = useSelector(selectIsLoading);
+  const error = useSelector(selectError);
+
+  useEffect(() => {
+    dispatch(fetchContactsThunk());
+  }, [dispatch]);
 
   const handleAddContact = (name, number) => {
     const newContact = { id: nanoid(), name, number };
@@ -21,8 +38,7 @@ export const App = () => {
     if (contacts.some(contact => contact.name === name)) {
       toast(`${name} is already in contacts`, { autoClose: 4000 });
     } else {
-      // setContacts(prevContacts => [...prevContacts, newContact]);
-      dispatch(addContact(newContact));
+      dispatch(addContactThunk(newContact));
     }
   };
 
@@ -34,84 +50,34 @@ export const App = () => {
 
   const handleSetFilter = event => {
     const { value } = event.target;
-    // setFilter(value);
     dispatch(addFilter(value));
   };
 
   const handleDeleteContact = id => {
-    // setContacts(prev => prev.filter(contact => contact.id !== id));
-    dispatch(deleteContact(id));
+    dispatch(deleteContactThunk(id));
   };
 
   const filteredContacts = filterContacts();
 
   return (
-    <section>
-      <ToastContainer />
-      <Input onSubmit={handleAddContact} />
-      <ContactsList
-        contacts={filteredContacts}
-        onDeleteContact={handleDeleteContact}
-      />
-      <Filter onFilterChange={handleSetFilter} filter={filter} />
-    </section>
+    <div>
+      {error ? (
+        <h1>{error}</h1>
+      ) : (
+        <section>
+          <ToastContainer />
+          <Input onSubmit={handleAddContact} />
+          {isLoading ? (
+            <Loader />
+          ) : (
+            <ContactsList
+              contacts={filteredContacts}
+              onDeleteContact={handleDeleteContact}
+            />
+          )}
+          <Filter onFilterChange={handleSetFilter} filter={filter} />
+        </section>
+      )}
+    </div>
   );
 };
-
-// export const App = () => {
-//   const [contacts, setContacts] = useState([]);
-//   const [filter, setFilter] = useState('');
-
-//   useEffect(() => {
-//     const dataOfState = JSON.parse(localStorage.getItem('localContacts'));
-//     if (dataOfState && dataOfState.length) {
-//       setContacts(dataOfState);
-//     }
-//   }, []);
-
-//   useEffect(() => {
-//     if (!contacts.length) {
-//       return;
-//     }
-//     window.localStorage.setItem('localContacts', JSON.stringify(contacts));
-//   }, [contacts]);
-
-//   const handleAddContact = (name, number) => {
-//     const newContact = { id: nanoid(), name, number };
-
-//     if (contacts.some(contact => contact.name === name)) {
-//       toast(`${name} is already in contacts`, { autoClose: 4000 });
-//     } else {
-//       setContacts(prevContacts => [...prevContacts, newContact]);
-//     }
-//   };
-
-//   const filterContacts = () => {
-//     return contacts.filter(contact =>
-//       contact.name.toLowerCase().includes(filter.toLowerCase())
-//     );
-//   };
-
-//   const handleSetFilter = event => {
-//     const { value } = event.target;
-//     setFilter(value);
-//   };
-
-//   const handleDeleteContact = id => {
-//     setContacts(prev => prev.filter(contact => contact.id !== id));
-//   };
-
-//   const filteredContacts = filterContacts();
-
-//   return (
-//     <section>
-//       <ToastContainer />
-//       <Input onSubmit={handleAddContact} />
-//       <ContactsList
-//         contacts={filteredContacts}
-//         onDeleteContact={handleDeleteContact}
-//       />
-//       <Filter onFilterChange={handleSetFilter} filter={filter} />
-//     </section>
-//   );
-// };
