@@ -63,18 +63,16 @@ export const App = () => {
     <div>
       {error ? (
         <h1>{error}</h1>
+      ) : isLoading ? (
+        <Loader />
       ) : (
         <section>
           <ToastContainer />
           <Input onSubmit={handleAddContact} />
-          {isLoading ? (
-            <Loader />
-          ) : (
-            <ContactsList
-              contacts={filteredContacts}
-              onDeleteContact={handleDeleteContact}
-            />
-          )}
+          <ContactsList
+            contacts={filteredContacts}
+            onDeleteContact={handleDeleteContact}
+          />
           <Filter onFilterChange={handleSetFilter} filter={filter} />
         </section>
       )}
